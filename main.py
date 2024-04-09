@@ -8,15 +8,9 @@ async def captura(url: str, name: str):
     page = await browser.newPage()
     await page.goto(url, {'waitUntil': 'load'})
     await page.screenshot({'path': f'./screnshots/{name}.png', 'fullPage': True})
-    dimensions = await page.evaluate('''() => {
-            return {
-                width: document.documentElement.clientWidth,
-                height: document.documentElement.clientHeight,
-                deviceScaleFactor: window.devicePixelRatio,
-            }
-        }''')
+    with open(f'./logs/{name}.html', 'w', encoding='utf-8') as arquivo:
+        arquivo.write(await page.content())
     await browser.close()
-    print(dimensions)
 
 
 lista: list = ['https://www.muji.us/',
