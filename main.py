@@ -7,51 +7,11 @@ async def captura(url: str, name: str):
     browser = await launch()
     page = await browser.newPage()
     await page.goto(url, {'waitUntil': 'load'})
-    await page.screenshot({'path': f'./screnshots/{name}.png', 'fullPage': True})
+    await page.setViewport({'width': 1080, 'height': 2000})
+    await page.screenshot({'path': f'./screnshots/{name}.png'})
     with open(f'./logs/{name}.html', 'w', encoding='utf-8') as arquivo:
         arquivo.write(await page.content())
     await browser.close()
-
-
-lista: list = ['https://www.muji.us/',
-'https://hay.dk/country-selector?redirect=%2fpt%2f',
-'https://www.cos.com/en/index.html',
-'https://www.etiquetaunica.com.br/uniqlo',
-'https://www.naturaeco.com/pt-br/marcas/aesop-2/',
-'https://www.stories.com/en/index.html',
-'https://www.weekday.com/en/index.html',
-'https://www.arket.com/en/index.html',
-'https://monocle.com/'
-'https://robinhood.com/creditcard/?referral_code=4a1fa686',
-'https://www.kinfolk.com/',
-'https://www.newyorker.com/',
-'https://www.theatlantic.com/world/',
-'https://www.theguardian.com/international',
-'https://www.nytimes.com/',
-'https://www.lemonde.fr/',
-'https://elpais.com/america/',
-'https://www.folha.uol.com.br/',
-'https://oglobo.globo.com/',
-'https://medium.com/',
-'https://substack.com/home-i',
-'https://github.com/',
-'https://about.gitlab.com/',
-'https://www.dropbox.com/pt_BR/',
-'https://www.google.com/intl/pt-br/drive/about.html',
-'https://open.spotify.com/intl-pt',
-'https://www.apple.com/br/apple-music/',
-'https://vimeo.com/'
-]
-
-
-async def main():
-    tasks = []
-    chunk_size = len(lista) // 4
-    url_chunks = [lista[i:i + chunk_size] for i in range(0, len(lista), chunk_size)]
-    for chunk in url_chunks:
-        tasks.append(asyncio.create_task(process_chunk(chunk)))
-
-    await asyncio.gather(*tasks)
 
 
 async def process_chunk(chunk):
@@ -72,6 +32,24 @@ async def process_chunk(chunk):
             arquivo.write(erros)
 
 
+def ler_arquivo_links(nome_arquivo):
+    with open(nome_arquivo, 'r') as arquivo:
+        linhas = arquivo.readlines()
+        links = [linha.strip() for linha in linhas]
+    return links
+
+
+async def main(urls: list):
+    tasks = []
+    chunk_size = len(urls) // 4
+    url_chunks = [urls[i:i + chunk_size] for i in range(0, len(urls), chunk_size)]
+    for chunk in url_chunks:
+        tasks.append(asyncio.create_task(process_chunk(chunk)))
+
+    await asyncio.gather(*tasks)
+
+
 if __name__ == '__main__':
-    asyncio.get_event_loop().run_until_complete(main())
+    arquivo = ler_arquivo_links('arquivo.txt')
+    asyncio.get_event_loop().run_until_complete(main(arquivo))
     print('olhe a pasta logs para verificar os erros')
